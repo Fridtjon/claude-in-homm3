@@ -2,20 +2,30 @@
 # h3notify.sh — Claude Code hook that sends notifications to HOMM3
 # Writes messages to /tmp/h3claude/inbox.jsonl, read by the H3.ClaudeExpo plugin.
 #
-# Supports both JSON and plain text formats.
-# JSON: {"from":"session-name","text":"message","event":"Stop"}
-# Plain: just a string displayed as-is in chat.
+# Claude Code passes hook context as JSON on stdin, including:
+#   hook_event_name, session_id, cwd, and event-specific fields.
 
 set -uo pipefail
 
 INBOX="/tmp/h3claude/inbox.jsonl"
 mkdir -p /tmp/h3claude
 
-# Get the hook event type from Claude Code's environment
-EVENT="${HOOK_EVENT:-unknown}"
+# Read JSON context from stdin
+INPUT=$(cat)
 
-# Try to identify this Claude session (use CWD basename as session name)
-SESSION_NAME="${CLAUDE_SESSION_NAME:-$(basename "${PWD:-unknown}")}"
+# Extract fields using jq (falls back gracefully if jq missing)
+if command -v jq &>/dev/null; then
+    EVENT=$(echo "$INPUT" | jq -r '.hook_event_name // "unknown"')
+    CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
+else
+    # Fallback: rough extraction without jq
+    EVENT=$(echo "$INPUT" | grep -o '"hook_event_name":"[^"]*"' | cut -d'"' -f4)
+    CWD=$(echo "$INPUT" | grep -o '"cwd":"[^"]*"' | cut -d'"' -f4)
+    EVENT="${EVENT:-unknown}"
+fi
+
+# Use CWD basename as session identifier
+SESSION_NAME=$(basename "${CWD:-unknown}")
 
 # Map events to short, informative messages
 case "$EVENT" in
