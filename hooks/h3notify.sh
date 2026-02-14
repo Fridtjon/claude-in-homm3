@@ -24,8 +24,13 @@ else
     EVENT="${EVENT:-unknown}"
 fi
 
-# Use CWD basename as session identifier
-SESSION_NAME=$(basename "${CWD:-unknown}")
+# Identify session by git repo root (stable regardless of subdirectory)
+# Falls back to CWD basename if not in a git repo
+if [ -n "$CWD" ] && GIT_ROOT=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null); then
+    SESSION_NAME=$(basename "$GIT_ROOT")
+else
+    SESSION_NAME=$(basename "${CWD:-unknown}")
+fi
 
 # Map events to short, informative messages
 case "$EVENT" in
