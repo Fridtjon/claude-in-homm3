@@ -107,15 +107,20 @@ static void PollInbox()
 
         if (line[0] == '{')
         {
-            // JSON message: extract "from" and "text" fields
+            // JSON message: extract "from", "text", and "time" fields
             char from[64] = "claude";
             char text[256] = "";
+            char timestr[16] = "";
             JsonGetString(line, "from", from, sizeof(from));
             JsonGetString(line, "text", text, sizeof(text));
+            JsonGetString(line, "time", timestr, sizeof(timestr));
 
             if (text[0])
             {
-                snprintf(chatMsg, sizeof(chatMsg), "[%s] %s", from, text);
+                if (timestr[0])
+                    snprintf(chatMsg, sizeof(chatMsg), "[%s %s] %s", timestr, from, text);
+                else
+                    snprintf(chatMsg, sizeof(chatMsg), "[%s] %s", from, text);
                 ChatShow(chatMsg);
                 Log("Inbox: %s", chatMsg);
                 messagesRead++;

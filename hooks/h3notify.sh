@@ -74,5 +74,6 @@ case "$EVENT" in
         ;;
 esac
 
-# Write JSON message to inbox
-echo "{\"from\":\"$SESSION_NAME\",\"text\":\"$MSG\",\"event\":\"$EVENT\"}" >> "$INBOX"
+# Write JSON message to inbox (with timestamp)
+TS=$(date +%H:%M:%S)
+echo "{\"from\":\"$SESSION_NAME\",\"text\":\"$MSG\",\"event\":\"$EVENT\",\"time\":\"$TS\"}" >> "$INBOX"
