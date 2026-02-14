@@ -1,0 +1,24 @@
+# Build artifacts
+*.o
+*.dll
+*.exe
+*.lib
+*.a
+build/
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IPC temp files
+/tmp/h3claude/
+
+# Dependencies (vendored separately)
+plugin/include/H3API/
+plugin/include/patcher_x86/
