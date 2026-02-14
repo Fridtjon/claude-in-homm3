@@ -24,12 +24,31 @@ else
     EVENT="${EVENT:-unknown}"
 fi
 
-# Identify session by git repo root (stable regardless of subdirectory)
-# Falls back to CWD basename if not in a git repo
-if [ -n "$CWD" ] && GIT_ROOT=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null); then
-    SESSION_NAME=$(basename "$GIT_ROOT")
-else
-    SESSION_NAME=$(basename "${CWD:-unknown}")
+# Identify session by finding the git root, then checking if it's a worktree.
+#
+# For worktrees (claude-a2/web-client-dolphin):
+#   git root = web-client-dolphin, parent = claude-a2 -> use "claude-a2"
+#
+# For standalone repos (h3-claude-expo):
+#   git root = h3-claude-expo -> use "h3-claude-expo"
+#
+# This is stable regardless of which subdirectory Claude has cd'd into.
+SESSION_NAME="unknown"
+if [ -n "$CWD" ]; then
+    GIT_ROOT=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null) || true
+
+    if [ -n "$GIT_ROOT" ]; then
+        # Check if this is a git worktree (.git is a file, not a directory)
+        if [ -f "$GIT_ROOT/.git" ]; then
+            # Worktree — use the parent directory (workstation name)
+            SESSION_NAME=$(basename "$(dirname "$GIT_ROOT")")
+        else
+            # Normal repo — use the repo name
+            SESSION_NAME=$(basename "$GIT_ROOT")
+        fi
+    else
+        SESSION_NAME=$(basename "$CWD")
+    fi
 fi
 
 # Map events to short, informative messages
