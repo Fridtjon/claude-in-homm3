@@ -1,4 +1,4 @@
-# H3 Claude Expo
+# Claude In Homm 3 (Heroes of Might and Magic III)
 
 A Heroes of Might and Magic III (HD Mod) plugin that turns the in-game chat into a terminal for Claude Code notifications — and optionally, bidirectional communication.
 
